@@ -1,0 +1,110 @@
+C51 COMPILER V9.53.0.0   MOTEUR                                                            05/09/2019 23:35:50 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE MOTEUR
+OBJECT MODULE PLACED IN .\src\moteur.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v3\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\Minh Ha
+                    -c\SimplicityStudio\v3_workspace\myProject\src\moteur.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOATFUZ
+                    -ZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:/Users/Minh Hac/SimplicityStudio/v3_worksp
+                    -ace/myProject/inc;C:/SiliconLabs/SimplicityStudio/v3/developer/sdks/si8051/v3//Device/shared/si8051Base;C:/SiliconLabs/S
+                    -implicityStudio/v3/developer/sdks/si8051/v3//Device/C8051F930;C:/SiliconLabs/SimplicityStudio/v3/developer/sdks/si8051/v
+                    -3//Device/C8051F930/inc) PRINT(.\src\moteur.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\src\moteur.OBJ)
+
+line level    source
+
+   1          #include <SI_C8051F930_Register_Enums.h>
+   2          #include "moteur_port.h"
+   3          #include "variables_globales.h"
+   4          
+   5          void InitMoteur(void){                  // initialisation du moteur
+   6   1      
+   7   1         CKCON &= ~0x30;     // T2ML = 0 et T2MH=0, la fréquence d'incrémentation
+   8   1                                                //dépend de T2XCLK
+   9   1         TMR2RLL = 0x18;         // valeur init: FC18 (H)
+  10   1         TMR2RLH = 0xFC;
+  11   1         TMR2L = 0x18;               // valeur init: FC18 (H)
+  12   1         TMR2H = 0xFC;
+  13   1      
+  14   1         TMR2CN = 0x04;          // 16bits auto-reload et f =fsys/12 avec T2XCLK = 00
+  15   1                                 // Lancer timer2 = moteur tourne au démarrage du microcontrôleur
+  16   1         IE_ET2 = 1;             // Timer 2 Interrupt Enable
+  17   1      }
+  18          
+  19          void changePhase(void){             // change le phase chaque une base de temps du Timer 2
+  20   1      
+  21   1              switch(etat_phase) {
+  22   2                   case 0: {
+  23   3                  Phase1;    // sortie phase 1
+  24   3                  break;}
+  25   2                   case 1: {
+  26   3                  Phase2;        // sortie phase 2
+  27   3                          break;}
+  28   2                   case 2: {
+  29   3                  Phase3;    // sortie phase 3
+  30   3                          break;}
+  31   2      
+  32   2                   case 3: {
+  33   3                 Phase4;     // sortie phase 4
+  34   3                         break;}
+  35   2              }
+  36   1          etat_phase++;                           // basculement vers une autre phase
+  37   1          if(etat_phase==4)  etat_phase=0;        // après la phase 4, il retourne la phase 1
+  38   1      }
+  39          
+  40          void demarage_arret_Moteur(void){// Pour arrêt et démarrage du moteur
+  41   1              TMR2CN_TR2 = !TMR2CN_TR2;    // basculement d’état du TMR2CN_TR2
+  42   1                                       // => stopper ou lancer le timer2
+  43   1      }
+  44          
+  45          void InitMoteur_Base100us(void){  // configurer le timer 2
+  46   1      
+  47   1                CKCON &= ~0x30;     // T2ML = 0 et T2MH=0, la fréquence d'incrémentation
+  48   1                                                       //dépend de T2XCLK
+  49   1      
+  50   1                TMR2RLL = 0x59;         // valeur init: FFEF (H)
+  51   1                TMR2RLH = 0xFF;
+C51 COMPILER V9.53.0.0   MOTEUR                                                            05/09/2019 23:35:50 PAGE 2   
+
+  52   1                TMR2L = 0x59;               // valeur init: FFEF (H)
+  53   1                TMR2H = 0xFF;
+  54   1      
+  55   1                TMR2CN = 0x04;   // 16bits auto-reload et f =fsys/12 avec T2XCLK = 00
+  56   1                                            // Lancer timer2 = moteur tourne au démarrage du microcontrôleur
+  57   1                IE_ET2 = 1;            // Timer 2 Interrupt Enable
+  58   1      }
+  59          
+  60          void ChangePhase2(void){
+  61   1              if(etat_phase==0){            // Au debut
+  62   2                      Phase1;                   // sortir la phase 1
+  63   2              }
+  64   1              else if(etat_phase==val){     // Apres val fois d'interruption, le compteur etat_phase = la valeur recu p
+             -ar UART0
+  65   2                      Phase2;                   // sortir la phase 2, la duree correspond a 100*val
+  66   2              }
+  67   1              else if(etat_phase==2*val){   // Apres une duree de 100*val
+  68   2                      Phase3;                   // sortir la phase 3
+  69   2              }
+  70   1              else if(etat_phase==3*val){
+  71   2                      Phase4;
+  72   2              }
+  73   1          etat_phase++;                 // le compteur va monter chaque l'interruption
+  74   1              if(etat_phase==4*val) etat_phase =0;  // Apres 4*val*100us = une periode, le compteur retoune a 0
+  75   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    283    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

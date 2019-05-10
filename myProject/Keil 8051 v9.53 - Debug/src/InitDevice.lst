@@ -1,0 +1,86 @@
+C51 COMPILER V9.53.0.0   INITDEVICE                                                        05/09/2019 21:28:57 PAGE 1   
+
+
+C51 COMPILER V9.53.0.0, COMPILATION OF MODULE INITDEVICE
+OBJECT MODULE PLACED IN .\src\InitDevice.OBJ
+COMPILER INVOKED BY: c:\SiliconLabs\SimplicityStudio\v3\developer\toolchains\keil_8051\9.53\BIN\C51.exe C:\Users\Minh Ha
+                    -c\SimplicityStudio\v3_workspace\myProject\src\InitDevice.c OMF2 SMALL DEBUG OBJECTEXTEND ROM(LARGE) WARNINGLEVEL(2) FLOA
+                    -TFUZZY(3) OPTIMIZE(8,SPEED) DEFINE(DEBUG=1) INTVECTOR(0X0000) INTPROMOTE INCDIR(C:/Users/Minh Hac/SimplicityStudio/v3_wo
+                    -rkspace/myProject/inc;C:/SiliconLabs/SimplicityStudio/v3/developer/sdks/si8051/v3//Device/shared/si8051Base;C:/SiliconLa
+                    -bs/SimplicityStudio/v3/developer/sdks/si8051/v3//Device/C8051F930;C:/SiliconLabs/SimplicityStudio/v3/developer/sdks/si80
+                    -51/v3//Device/C8051F930/inc) PRINT(.\src\InitDevice.lst) COND PAGEWIDTH(120) PAGELENGTH(65) OBJECT(.\src\InitDevice.OBJ)
+
+line level    source
+
+   1          //=========================================================
+   2          // Declaration et Initialisation les parametres au demarage
+   3          // du Microcontroleur:
+   4          // 1. fonction appele les autres fonctions
+   5          // 2. fonction pour la configuration du timer 0
+   6          // 3. fonction pour la configuration du timer 1
+   7          //=========================================================
+   8          
+   9          // includes
+  10          #include <SI_C8051F930_Register_Enums.h>
+  11          #include "InitDevice.h"
+  12          
+  13          // foncitons
+  14          extern void initDevice(void){            // pour appeler tous les fonctions initiales.
+  15   1                 permetion_interrupt();
+  16   1                 configuration_timer0();
+  17   1                 configuration_timer1();
+  18   1      
+  19   1      }
+  20          extern void configuration_timer0(void){  // configuration du timer 0
+  21   1                 CKCON &= ~0x0F;                   //  fsys/12 avec SCA1:SCA0 = 00
+  22   1      
+  23   1                 TMOD &= ~0x0F;  // mettre les bits poids faible du regitre TMOD timer0 a 0
+  24   1                 TMOD |= 0x02;   // mode 2(8 bits auto reload comme un temporaseur)
+  25   1                                 // => [10] pour les 1 et 0
+  26   1      
+  27   1                 TL0= 0x06;      // valeur init: 06(H) voir dans l’explication
+  28   1                 TH0 = 0x06;     // il commence a 6 jusqu'a 255 pour remplir 8 bits
+  29   1      
+  30   1                 TCON_TR0 = 1;   // lancer timer 0
+  31   1      }
+  32          extern void configuration_timer1(void){  // configuration du timer 1
+  33   1                 CKCON &= ~0x0F;              //  fsys/12 avec SCA1:SCA0 = 00 meme frequence avec Timer 0
+  34   1      
+  35   1                 TMOD &= ~0xF0;    // mettre les bits poids fort du registre TMOD a 0
+  36   1                 TMOD |= 0x02;     // mode 2(8 auto-reload bits comme un temporisateur)
+  37   1                                   // => [10] pour les bits 5 et 4
+  38   1                 TH1 = 0xA9;       // voir la détaille du Timer 1 pour la vitesse de Baud(l’erreur de 0.22%)
+  39   1      
+  40   1                 SCON0_REN=1;                 // permission de la réception UART0
+  41   1                 SCON0_TI =1;                 // prêt à transmission UART0
+  42   1      
+  43   1                 TCON_TR1 = 1;                 // lancer timer 0
+  44   1      }
+  45          extern  void permetion_interrupt(void){  // permissions des interruptions
+  46   1                      TCON_IT0 =1;                     // permission de l'interruption
+  47   1                      IE_ET0 =1;                       // du Timer0 est enable
+  48   1                      IE_ES0 =1;                       // du UART0 est enable
+  49   1                      IE_EA = 1;                       // EA =1 permission tous les interruptions
+  50   1      }
+  51          
+C51 COMPILER V9.53.0.0   INITDEVICE                                                        05/09/2019 21:28:57 PAGE 2   
+
+  52          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     55    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+   EDATA SIZE       =   ----    ----
+   HDATA SIZE       =   ----    ----
+   XDATA CONST SIZE =   ----    ----
+   FAR CONST SIZE   =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ASCII"?>
+<device:XMLDevice xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:device="http://www.silabs.com/sls/hc/document/device.ecore" name="C8051F930-G-GQ-LQFP" partId="com.silabs.mcu.si8051.c8051f930_g.c8051f930">
+  <mode name="DefaultMode">
+    <property object="DefaultMode" propertyId="mode.diagramLocation" value="100, 100"/>
+  </mode>
+  <modeTransition>
+    <property object="RESET &#x2192; DefaultMode" propertyId="modeTransition.target" value="DefaultMode"/>
+    <property object="RESET &#x2192; DefaultMode" propertyId="modeTransition.source" value="RESET"/>
+  </modeTransition>
+</device:XMLDevice>
